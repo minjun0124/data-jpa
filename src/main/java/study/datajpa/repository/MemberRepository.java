@@ -30,4 +30,11 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "from Member m join m.team t")
     List<MemberDto> findMemberDto();
 
+    // 파라미터 바인딩은 위치 기반보다는 가급적 이름 기반으로 한다.
+    @Query("select m from Member m where m.username = :name")
+    Member findMembers(@Param("name") String username);
+
+    // Collection type in 절 지원
+    @Query("select m from Member m where m.username in :names")
+    List<Member> findByNames(@Param("names") List<String> names);
 }
