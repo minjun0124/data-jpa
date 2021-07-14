@@ -4,18 +4,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
 
+import javax.persistence.LockModeType;
+import javax.persistence.QueryHint;
 import java.util.List;
 import java.util.Optional;
 
-public interface MemberRepository extends JpaRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
     List<Member> findByUsernameAndAgeGreaterThan(String username, int age);
 
     //  @Query(name = "Member.findByUsername") 생략 가능하다.
@@ -101,5 +100,11 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("select m from Member m")
     List<Member> findNamedEntityGraph();
 
+    // 정말 극악의 최적화가 필요한 경우 아래와 같이 Query hint를 사용하면
+    // 해당 쿼리에 대한 1차 캐쉬 스냅샷은 찍지 않는다.
+    @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
+    Member findReadOnlyByUsername(String username);
 
+//    @Lock(LockModeType.PESSIMISTIC_WRITE)
+//    List<Member> findByUsername(String name);
 }
