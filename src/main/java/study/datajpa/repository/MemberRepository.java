@@ -1,12 +1,18 @@
 package study.datajpa.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findByUsernameAndAgeGreaterThan(String username, int age);
@@ -37,4 +43,31 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // Collection type in 절 지원
     @Query("select m from Member m where m.username in :names")
     List<Member> findByNames(@Param("names") List<String> names);
+
+    /**
+     * 반환 타입
+     */
+//    List<Member> findByUsername(String name); //컬렉션
+//    Member findByUsername(String name); //단건
+//    Optional<Member> findByUsername(String name); //단건 Optional
+
+    /**
+     * paging / sorting
+     */
+//    Page<Member> findByUsername(String name, Pageable pageable); //count 쿼리 사용
+//    Slice<Member> findByUsername(String name, Pageable pageable); //count 쿼리 사용 안함
+//    List<Member> findByUsername(String name, Pageable pageable); //count 쿼리 사용 안함
+//    List<Member> findByUsername(String name, Sort sort);
+
+//    paging 에서 join 쿼리를 사용한다고 해도
+//    count query 는 join 이 필요없을 수 있다.
+//    이 경우 효율이 떨어지기 떄문에 필요한 경우 아래와 같이 count 쿼리를 분리해줄 수 있다.
+//    @Query(value = "select m from Member m",
+//            countQuery = "select count(m.username) from Member m")
+    Page<Member> findByAge(int age, Pageable pageable);
+//    Slice<Member> findByAge(int age, Pageable pageable);
+
+    @Modifying
+    @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
+    int bulkAgePlus(@Param("age") int age);
 }
