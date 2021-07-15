@@ -94,7 +94,7 @@ public class MemberRepositoryTest {
 
         //when
         //count 쿼리까지 나감
-        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC,"username"));
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
         Page<Member> page = memberRepository.findByAge(10, pageRequest);
 
         //Entity 를 그대로 반환하는 것은 좋지 않다. -> DTO로 감싸서 반환
@@ -122,7 +122,7 @@ public class MemberRepositoryTest {
 
         //when
         //count 쿼리까지 나감
-        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC,"username"));
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
         Slice<Member> page = memberRepository.findByAge(10, pageRequest);
 
         //then
@@ -141,7 +141,8 @@ public class MemberRepositoryTest {
         memberRepository.save(new Member("member1", 10));
         memberRepository.save(new Member("member2", 19));
         memberRepository.save(new Member("member3", 20));
-        memberRepository.save(new Member("member4", 21)); memberRepository.save(new Member("member5", 40));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 40));
         //when
         int resultCount = memberRepository.bulkAgePlus(20);
         //then
@@ -190,6 +191,26 @@ public class MemberRepositoryTest {
         Member member = memberRepository.findReadOnlyByUsername("member1");
         member.setUsername("member2");
         em.flush(); //Update Query 실행X
+    }
+
+    @Test
+    public void JpaEventBaseEntity() throws Exception {
+        //given
+        Member member = new Member("member1");
+        memberRepository.save(member); //@PrePersist
+        Thread.sleep(100);
+        member.setUsername("member2");
+        em.flush(); //@PreUpdate
+        em.clear();
+
+        //when
+        Member findMember = memberRepository.findById(member.getId()).get();
+
+        //then
+        System.out.println("findMember.createdDate = " +
+                findMember.getCreatedDate());
+        System.out.println("findMember.updatedDate = " +
+                findMember.getUpdatedDate());
     }
 
 }
